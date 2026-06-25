@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROTOCOL 10 - Social Deduction Extraction TPS</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Background Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- Screen overlays -->
+  <div id="ui-layer">
+    
+    <!-- LOBBY SCREEN -->
+    <div id="lobby-screen" class="glass-panel modal">
+      <div class="logo-container">
+        <svg class="logo-icon" viewBox="0 0 100 100" width="80" height="80">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="4"/>
+          <line x1="20" y1="80" x2="80" y2="20" stroke="white" stroke-width="4" />
+          <line x1="50" y1="2" x2="50" y2="15" stroke="white" stroke-width="4"/>
+          <line x1="50" y1="85" x2="50" y2="98" stroke="white" stroke-width="4"/>
+          <line x1="2" y1="50" x2="15" y2="50" stroke="white" stroke-width="4"/>
+          <line x1="85" y1="50" x2="98" y2="50" stroke="white" stroke-width="4"/>
+        </svg>
+        <h1>PROTOCOL 10</h1>
+        <p class="subtitle">TPS SOCIAL EXTRACTION ENGINE</p>
+      </div>
+
+      <div id="login-form" class="form-section">
+        <input type="text" id="username-input" placeholder="DESIGNATION (PSEUDO)..." maxlength="16" autofocus>
+        <button id="join-btn" class="btn-glow">INITIATE PROTOCOL</button>
+      </div>
+
+      <div id="lobby-room" class="form-section hidden">
+        <div class="lobby-grid">
+          <div class="players-list-panel">
+            <h3>CONNECTED AGENTS (<span id="connected-count">0</span>/10)</h3>
+            <div id="lobby-players" class="scroll-list">
+              <!-- Player slots populate here -->
+            </div>
+          </div>
+          <div class="rules-panel">
+            <h3>PROTOCOL DIRECTIVES</h3>
+            <ul>
+              <li><strong>INNOCENTS (8):</strong> Loot crates outside. Reach the quota & stay alive.</li>
+              <li><strong>INFILTRATORS (2):</strong> Sabotage & eliminate. Perform silent kills from behind (blind spots).</li>
+              <li><strong>STORM PHASE:</strong> Radioactive fog rushes in. Sprint back to the central Bunker before doors lock!</li>
+              <li><strong>VOTING:</strong> Exile suspicious agents. Roles are revealed upon banishment.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="lobby-actions">
+          <button id="ready-btn" class="btn-glow">FLAG READY</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IN-GAME HUD -->
+    <div id="hud-container" class="hidden">
+      <!-- Top Bar: Phase, Timers, Quotas -->
+      <div class="hud-top">
+        <div class="hud-box phase-info">
+          <div class="label">CURRENT SYSTEM STATE</div>
+          <div id="hud-phase" class="value text-glitch">LOBBY</div>
+        </div>
+
+        <div class="hud-box timer-info">
+          <div class="label">LOCKDOWN TIMER</div>
+          <div id="hud-timer" class="value countdown">00:00</div>
+        </div>
+
+        <div class="hud-box round-info">
+          <div class="label">CYCLE</div>
+          <div id="hud-round" class="value">ROUND 01/03</div>
+        </div>
+      </div>
+
+      <!-- Loot Quota Bar -->
+      <div class="loot-progress-bar">
+        <div class="label">EXTRACTION QUOTA <span id="loot-ratio">0/0</span></div>
+        <div class="progress-track">
+          <div id="loot-fill" class="progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Left Bar: Player status -->
+      <div class="hud-left">
+        <div class="hud-box role-badge">
+          <div class="label">AUTHENTICATION</div>
+          <div id="hud-role" class="value unknown-role">UNKNOWN</div>
+        </div>
+
+        <div class="hud-box hp-badge">
+          <div class="label">HEALTH INTEGRITY</div>
+          <div class="hp-container">
+            <div id="hp-fill" class="hp-fill" style="width: 100%;"></div>
+            <div id="hp-text" class="hp-text">100 HP</div>
+          </div>
+        </div>
+
+        <div id="hud-stealth-tip" class="hud-tip hidden">
+          <span>TARGET IN BLIND SPOT</span>
+        </div>
+      </div>
+
+      <!-- Action Overlay (Stealth kill notification / instructions) -->
+      <div id="action-prompt" class="action-prompt hidden">
+        PRESS [E] TO EXECUTE STEALTH KILL
+      </div>
+      <div id="loot-prompt" class="action-prompt hidden">
+        PRESS [F] TO EXTRACT LOOT
+      </div>
+
+      <!-- Right Bar: Scoreboard / Alive players -->
+      <div class="hud-right glass-panel">
+        <h3>ACTIVE SYNDICATE</h3>
+        <div id="scoreboard-list" class="score-list">
+          <!-- Active players list -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VOTE OVERLAY -->
+    <div id="vote-screen" class="glass-panel modal hidden">
+      <div class="vote-header">
+        <h2 class="text-glitch">VOTE BANISHMENT IN PROGRESS</h2>
+        <p>Select an agent to exile to the radioactive storm. Majority rules.</p>
+        <div class="vote-timer-container">
+          CLOSING IN: <span id="vote-timer">30</span>s
+        </div>
+      </div>
+      <div id="vote-grid" class="vote-grid">
+        <!-- Player buttons populate here -->
+      </div>
+      <div class="vote-actions">
+        <button id="skip-vote-btn" class="skip-btn">ABSTAIN (SKIP VOTE)</button>
+      </div>
+    </div>
+
+    <!-- CHAT BAR (Bottom Left) -->
+    <div id="chat-container" class="glass-panel hidden">
+      <div id="chat-messages" class="chat-log"></div>
+      <form id="chat-form" class="chat-input-form">
+        <input type="text" id="chat-input" placeholder="TRANSMIT COMMS..." autocomplete="off">
+        <button type="submit">SEND</button>
+      </form>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="game-over-screen" class="glass-panel modal hidden">
+      <h1 id="victory-title" class="text-glitch">PROTOCOL RESOLVED</h1>
+      <p id="victory-sub" class="victory-sub">THE INFILTRATORS HAVE PURGED THE BUNKER</p>
+      
+      <div class="game-over-stats">
+        <div>TOTAL LOOT EXTRACTED: <span id="go-loot">0</span></div>
+        <div>ROUNDS ELAPSED: <span id="go-rounds">0</span></div>
+      </div>
+
+      <button id="restart-btn" class="btn-glow">RESET SIMULATION</button>
+    </div>
+
+  </div>
+
+  <!-- Main scripts -->
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>
