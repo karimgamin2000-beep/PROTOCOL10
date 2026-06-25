@@ -8,6 +8,7 @@
     "dev:server": "tsx watch server/server.ts",
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
+    "build": "npm run build:client && npm run build:server",
     "start": "node dist/server/server.js",
     "check": "tsc --noEmit"
   },
