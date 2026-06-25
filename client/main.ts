@@ -43,7 +43,7 @@ const goRounds = document.getElementById('go-rounds')!;
 const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement;
 
 // Networking State
-const socket: Socket = io();
+const socket: Socket = io((import.meta.env.VITE_BACKEND_URL as string) || undefined);
 let localPlayerId: string | null = null;
 let gameScene: GameScene | null = null;
 let isReady = false;
