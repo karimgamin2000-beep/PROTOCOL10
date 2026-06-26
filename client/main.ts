@@ -126,19 +126,26 @@ socket.on('gameReset', () => {
   isReady = false;
   readyBtn.textContent = 'FLAG READY';
   readyBtn.classList.remove('active');
-  usernameInput.value = '';
   
   addChatMessage('SYSTEM', 'UNKNOWN', 'PROTOCOL reset by admin.');
 });
 
+// Restore saved username
+const savedName = localStorage.getItem('protocol10_username');
+if (savedName) usernameInput.value = savedName;
+
 // UI Actions - Lobby
-joinBtn.addEventListener('click', () => {
+function doJoin() {
   const name = usernameInput.value.trim();
-  if (name) {
-    socket.emit('joinLobby', { name });
-    loginForm.classList.add('hidden');
-    lobbyRoom.classList.remove('hidden');
-  }
+  if (!name) return;
+  localStorage.setItem('protocol10_username', name);
+  socket.emit('joinLobby', { name });
+  loginForm.classList.add('hidden');
+  lobbyRoom.classList.remove('hidden');
+}
+joinBtn.addEventListener('click', doJoin);
+usernameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') doJoin();
 });
 
 readyBtn.addEventListener('click', () => {

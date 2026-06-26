@@ -343,6 +343,10 @@ export class GameScene {
   private setupEvents() {
     // Keyboard inputs
     window.addEventListener('keydown', (e) => {
+      // Ignore if user is typing in an input field
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
       this.keys[e.key.toLowerCase()] = true;
 
       // Handle Interact [F]
@@ -357,6 +361,8 @@ export class GameScene {
     });
 
     window.addEventListener('keyup', (e) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       this.keys[e.key.toLowerCase()] = false;
     });
 
