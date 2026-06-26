@@ -572,6 +572,11 @@ input[type="text"]:focus {
   text-shadow: var(--glow-red);
 }
 
+#vote-screen {
+  z-index: 100;
+  pointer-events: auto;
+}
+
 .vote-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

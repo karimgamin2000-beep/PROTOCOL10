@@ -158,7 +158,17 @@ chatForm.addEventListener('submit', (e) => {
   }
 });
 
-// UI Actions - Voting
+// UI Actions - Voting (event delegation on voteGrid)
+voteGrid.addEventListener('click', (e) => {
+  const card = (e.target as HTMLElement).closest('.vote-card') as HTMLElement | null;
+  if (!card) return;
+  const pid = card.dataset.playerId;
+  if (!pid || pid === localPlayerId || card.classList.contains('voted-out')) return;
+  socket.emit('castVote', { targetPlayerId: pid });
+  voteGrid.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+});
+
 skipVoteBtn.addEventListener('click', () => {
   socket.emit('castVote', { targetPlayerId: null });
   skipVoteBtn.disabled = true;
@@ -328,17 +338,6 @@ function updateHUD(state: GameState) {
 
         card.appendChild(nameSpan);
         card.appendChild(countSpan);
-
-        // Disable card actions if self or dead
-        if (p.alive && p.id !== localPlayerId) {
-          card.addEventListener('click', () => {
-            socket.emit('castVote', { targetPlayerId: p.id });
-            const allCards = voteGrid.querySelectorAll('.vote-card');
-            allCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-          });
-        }
-
         voteGrid.appendChild(card);
       });
 
