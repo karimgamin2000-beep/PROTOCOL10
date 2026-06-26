@@ -76,9 +76,9 @@ export class GameScene {
   private initThree() {
     this.scene = new THREE.Scene();
     
-    // Post-apocalyptic sky — smoky orange-brown haze
-    this.scene.background = new THREE.Color(0x1a0d04);
-    this.scene.fog = new THREE.FogExp2(0x1a0d04, 0.012);
+    // Warm desert sky — bright enough to see clearly
+    this.scene.background = new THREE.Color(0x3a2a18);
+    this.scene.fog = new THREE.FogExp2(0x3a2a18, 0.008);
 
     this.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     
@@ -87,17 +87,17 @@ export class GameScene {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.9;
+    this.renderer.toneMappingExposure = 1.4;
     this.container.appendChild(this.renderer.domElement);
 
     this.clock = new THREE.Clock();
 
-    // Warm dim ambient — ash-filtered daylight
-    this.ambientLight = new THREE.AmbientLight(0x4a2a10, 0.6);
+    // Warm ambient — hazy daylight
+    this.ambientLight = new THREE.AmbientLight(0x7a5530, 0.7);
     this.scene.add(this.ambientLight);
 
-    // Setting sun — harsh orange-red directional light
-    this.dirLight = new THREE.DirectionalLight(0xff6020, 1.1);
+    // Golden sun directional light
+    this.dirLight = new THREE.DirectionalLight(0xffaa60, 1.4);
     this.dirLight.position.set(-30, 50, -20);
     this.dirLight.castShadow = true;
     this.dirLight.shadow.mapSize.width = 2048;
@@ -111,8 +111,8 @@ export class GameScene {
     this.dirLight.shadow.camera.bottom = -d;
     this.scene.add(this.dirLight);
 
-    // Secondary fill light — radioactive green bounce from ground
-    const fillLight = new THREE.HemisphereLight(0x2a4a10, 0x3a1800, 0.4);
+    // Secondary fill light — warm ground bounce
+    const fillLight = new THREE.HemisphereLight(0x6a8a50, 0x5a3820, 0.5);
     this.scene.add(fillLight);
 
     // Fire point lights scattered in world
@@ -397,38 +397,38 @@ export class GameScene {
   public updateState(state: GameState) {
     // Update sky / fog based on game phase
     if (state.phase === 'EXTRACTION') {
-      // Dusty orange daylight — extraction phase
-      this.scene.background = new THREE.Color(0x1a0d04);
+      // Golden hour — extraction phase
+      this.scene.background = new THREE.Color(0x4a3520);
       if (this.scene.fog instanceof THREE.FogExp2) {
-        this.scene.fog.color.setHex(0x1a0d04);
-        this.scene.fog.density = 0.012;
+        this.scene.fog.color.setHex(0x4a3520);
+        this.scene.fog.density = 0.008;
       }
-      this.dirLight.color.setHex(0xff6020);
-      this.ambientLight.color.setHex(0x4a2a10);
+      this.dirLight.color.setHex(0xffaa60);
+      this.ambientLight.color.setHex(0x8a6540);
       // Open doors
       this.animateDoors(true);
     } else if (state.phase === 'STORM') {
-      // Radioactive green storm fog — danger rising
+      // Greener haze — storm phase, still bright enough to play
       const ratio = (30 - state.timer) / 30;
-      const skyHex = ratio > 0.5 ? 0x071204 : 0x0a1a06;
+      const skyHex = ratio > 0.5 ? 0x2a3a20 : 0x3a4a28;
       this.scene.background = new THREE.Color(skyHex);
       if (this.scene.fog instanceof THREE.FogExp2) {
         this.scene.fog.color.setHex(skyHex);
-        this.scene.fog.density = 0.015 + ratio * 0.06;
+        this.scene.fog.density = 0.010 + ratio * 0.04;
       }
-      this.dirLight.color.setHex(0x80dd40);
-      this.ambientLight.color.setHex(0x1a3a0a);
+      this.dirLight.color.setHex(0x90dd50);
+      this.ambientLight.color.setHex(0x5a7a40);
       // Doors closing
       this.animateDoors(false, state.timer);
     } else {
-      // Vote / Lobby / Game Over — blood red tint
-      this.scene.background = new THREE.Color(0x110500);
+      // Vote / Lobby / Game Over — warm amber tint
+      this.scene.background = new THREE.Color(0x3a2018);
       if (this.scene.fog instanceof THREE.FogExp2) {
-        this.scene.fog.color.setHex(0x110500);
-        this.scene.fog.density = 0.014;
+        this.scene.fog.color.setHex(0x3a2018);
+        this.scene.fog.density = 0.010;
       }
-      this.dirLight.color.setHex(0xdd4410);
-      this.ambientLight.color.setHex(0x3a1a0a);
+      this.dirLight.color.setHex(0xee7740);
+      this.ambientLight.color.setHex(0x6a4030);
       this.animateDoors(false, 0);
     }
 

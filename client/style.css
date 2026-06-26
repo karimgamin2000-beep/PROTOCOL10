@@ -5,32 +5,32 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&family=Oswald:wght@400;700;900&display=swap');
 
 :root {
-  /* Core backgrounds */
-  --bg-primary: #0a0600;
-  --bg-panel: rgba(12, 8, 2, 0.82);
-  --bg-panel-warm: rgba(20, 10, 2, 0.88);
+  /* Core backgrounds — warm but bright enough to see clearly */
+  --bg-primary: #2a2218;
+  --bg-panel: rgba(40, 32, 24, 0.82);
+  --bg-panel-warm: rgba(50, 38, 28, 0.88);
 
   /* Borders */
-  --border-color: rgba(180, 90, 20, 0.35);
-  --border-active: rgba(255, 140, 30, 0.85);
-  --border-toxic: rgba(80, 200, 60, 0.5);
+  --border-color: rgba(220, 160, 80, 0.3);
+  --border-active: rgba(255, 190, 70, 0.9);
+  --border-toxic: rgba(120, 220, 80, 0.5);
 
-  /* Text */
-  --text-color: #d4b896;
-  --text-muted: #7a5c3a;
-  --text-bright: #f5c87a;
-  --text-toxic: #7fff5f;
+  /* Text — high contrast for readability */
+  --text-color: #ecd8b8;
+  --text-muted: #b89870;
+  --text-bright: #ffdd88;
+  --text-toxic: #9fff70;
 
   /* Accents */
-  --accent-orange: #e06b10;
-  --accent-red: #cc2a2a;
-  --accent-toxic: #4ec832;
-  --accent-rust: #8b3a1a;
+  --accent-orange: #e07820;
+  --accent-red: #dd4444;
+  --accent-toxic: #60d840;
+  --accent-rust: #a05028;
 
   /* Glow */
-  --glow-orange: 0 0 12px rgba(230, 107, 16, 0.6);
-  --glow-toxic: 0 0 10px rgba(78, 200, 50, 0.5);
-  --glow-red: 0 0 12px rgba(200, 40, 40, 0.6);
+  --glow-orange: 0 0 14px rgba(230, 130, 30, 0.7);
+  --glow-toxic: 0 0 12px rgba(96, 216, 64, 0.6);
+  --glow-red: 0 0 14px rgba(220, 60, 60, 0.7);
 
   /* Fonts */
   --font-sans: 'Oswald', sans-serif;
@@ -65,8 +65,8 @@ body::after {
     to bottom,
     transparent 0px,
     transparent 2px,
-    rgba(0,0,0,0.07) 2px,
-    rgba(0,0,0,0.07) 4px
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
   );
   pointer-events: none;
   z-index: 9999;
@@ -96,8 +96,8 @@ body::after {
 /* ─── Glass Panels (warm tinted) ────────────────────────────── */
 .glass-panel {
   background: var(--bg-panel-warm);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
   border: 1px solid var(--border-color);
   color: var(--text-color);
   pointer-events: auto;
@@ -146,7 +146,7 @@ button:active { transform: scale(0.97); }
 
 /* ─── Text Inputs ───────────────────────────────────────────── */
 input[type="text"] {
-  background: rgba(20, 10, 2, 0.7);
+  background: rgba(50, 38, 26, 0.8);
   border: 1px solid var(--border-color);
   color: var(--text-bright);
   padding: 14px 20px;
@@ -161,7 +161,7 @@ input[type="text"] {
 input[type="text"]:focus {
   outline: none;
   border-color: var(--accent-orange);
-  background: rgba(30, 15, 3, 0.9);
+  background: rgba(60, 44, 30, 0.9);
   box-shadow: var(--glow-orange);
 }
 
@@ -400,8 +400,8 @@ input[type="text"]:focus {
   position: relative;
   width: 180px;
   height: 22px;
-  background: rgba(80, 20, 0, 0.5);
-  border: 1px solid rgba(180, 90, 20, 0.4);
+  background: rgba(100, 40, 10, 0.4);
+  border: 1px solid rgba(200, 120, 40, 0.35);
 }
 
 .hp-fill {
@@ -587,7 +587,7 @@ input[type="text"]:focus {
 }
 
 .vote-card {
-  background: rgba(20, 10, 2, 0.6);
+  background: rgba(50, 38, 26, 0.7);
   border: 1px solid var(--border-color);
   padding: 15px;
   display: flex;
@@ -599,7 +599,7 @@ input[type="text"]:focus {
 }
 
 .vote-card:hover {
-  background: rgba(180, 90, 20, 0.12);
+  background: rgba(220, 140, 50, 0.18);
   border-color: var(--accent-orange);
   box-shadow: var(--glow-orange);
 }
@@ -715,7 +715,7 @@ input[type="text"]:focus {
   border: 1px solid var(--border-color);
   border-top: 2px solid var(--accent-orange);
   padding: 15px;
-  background: rgba(20, 10, 2, 0.6);
+  background: rgba(50, 38, 26, 0.7);
   text-align: center;
 }
 
@@ -764,7 +764,7 @@ input[type="text"]:focus {
 
 /* ─── Game Rules Overlay ─────────────────────────────────────── */
 #game-rules-overlay {
-  background: linear-gradient(160deg, rgba(10,5,0,0.97) 60%, rgba(40,15,0,0.97));
+  background: linear-gradient(160deg, rgba(40,30,20,0.97) 60%, rgba(60,40,20,0.97));
   border: 1px solid var(--border-color);
   border-top: 3px solid var(--accent-orange);
 }
