@@ -76,9 +76,9 @@ export class GameScene {
   private initThree() {
     this.scene = new THREE.Scene();
     
-    // Radioactive green/gray fog
-    this.scene.background = new THREE.Color(0x050805);
-    this.scene.fog = new THREE.FogExp2(0x050805, 0.015);
+    // Post-apocalyptic sky — smoky orange-brown haze
+    this.scene.background = new THREE.Color(0x1a0d04);
+    this.scene.fog = new THREE.FogExp2(0x1a0d04, 0.012);
 
     this.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     
@@ -86,66 +86,109 @@ export class GameScene {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 0.9;
     this.container.appendChild(this.renderer.domElement);
 
     this.clock = new THREE.Clock();
 
-    // Lighting
-    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.08);
+    // Warm dim ambient — ash-filtered daylight
+    this.ambientLight = new THREE.AmbientLight(0x4a2a10, 0.6);
     this.scene.add(this.ambientLight);
 
-    this.dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    this.dirLight.position.set(20, 40, 20);
+    // Setting sun — harsh orange-red directional light
+    this.dirLight = new THREE.DirectionalLight(0xff6020, 1.1);
+    this.dirLight.position.set(-30, 50, -20);
     this.dirLight.castShadow = true;
-    this.dirLight.shadow.mapSize.width = 1024;
-    this.dirLight.shadow.mapSize.height = 1024;
+    this.dirLight.shadow.mapSize.width = 2048;
+    this.dirLight.shadow.mapSize.height = 2048;
     this.dirLight.shadow.camera.near = 0.5;
-    this.dirLight.shadow.camera.far = 150;
-    const d = 40;
+    this.dirLight.shadow.camera.far = 200;
+    const d = 60;
     this.dirLight.shadow.camera.left = -d;
     this.dirLight.shadow.camera.right = d;
     this.dirLight.shadow.camera.top = d;
     this.dirLight.shadow.camera.bottom = -d;
     this.scene.add(this.dirLight);
+
+    // Secondary fill light — radioactive green bounce from ground
+    const fillLight = new THREE.HemisphereLight(0x2a4a10, 0x3a1800, 0.4);
+    this.scene.add(fillLight);
+
+    // Fire point lights scattered in world
+    const fireLightPositions = [
+      [-20, 2, -20], [20, 2, 20], [-25, 2, 30], [30, 2, -15], [0, 2, 40]
+    ];
+    fireLightPositions.forEach(pos => {
+      const fireLight = new THREE.PointLight(0xff4400, 3.0, 18);
+      fireLight.position.set(pos[0], pos[1], pos[2]);
+      this.scene.add(fireLight);
+    });
+
+    // Bunker zone — radioactive green glow at center
+    const bunkerLight = new THREE.PointLight(0x22ff44, 2.5, 30);
+    bunkerLight.position.set(0, 5, 0);
+    this.scene.add(bunkerLight);
   }
 
   private createWorld() {
-    // Ground Grid
-    const gridHelper = new THREE.GridHelper(120, 60, 0xffffff, 0x222222);
-    gridHelper.position.y = 0.01;
-    this.scene.add(gridHelper);
-
-    const groundGeo = new THREE.PlaneGeometry(120, 120);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.9 });
+    // ── Ground — cracked asphalt / dried earth ──────────────────
+    const groundGeo = new THREE.PlaneGeometry(120, 120, 30, 30);
+    const groundMat = new THREE.MeshStandardMaterial({
+      color: 0x2c1a08,
+      roughness: 1.0,
+      metalness: 0.0
+    });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    // Bunker Zone (Radius 15)
-    // Red glowing ring border
-    const ringGeo = new THREE.RingGeometry(14.8, 15.2, 64);
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+    // Ground cracks / detail grid — dim orange
+    const gridHelper = new THREE.GridHelper(120, 40, 0x3a1c06, 0x1a0d03);
+    gridHelper.position.y = 0.02;
+    this.scene.add(gridHelper);
+
+    // ── Bunker zone — radioactive ring ─────────────────────────
+    const ringGeo = new THREE.RingGeometry(14.7, 15.3, 64);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x44ff66, side: THREE.DoubleSide });
     const ring = new THREE.Mesh(ringGeo, ringMat);
     ring.rotation.x = -Math.PI / 2;
-    ring.position.y = 0.05;
+    ring.position.y = 0.04;
     this.scene.add(ring);
 
-    // Semi-transparent shield dome
+    // Inner bunker floor — concrete-green tinted
+    const bunkerFloorGeo = new THREE.CircleGeometry(14.7, 64);
+    const bunkerFloorMat = new THREE.MeshStandardMaterial({
+      color: 0x1a2a12,
+      roughness: 0.85,
+      metalness: 0.1
+    });
+    const bunkerFloor = new THREE.Mesh(bunkerFloorGeo, bunkerFloorMat);
+    bunkerFloor.rotation.x = -Math.PI / 2;
+    bunkerFloor.position.y = 0.01;
+    bunkerFloor.receiveShadow = true;
+    this.scene.add(bunkerFloor);
+
+    // Shield dome — toxic green wireframe
     const domeGeo = new THREE.SphereGeometry(15, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
     const domeMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+      color: 0x22ff44,
       transparent: true,
-      opacity: 0.05,
+      opacity: 0.07,
       wireframe: true,
       side: THREE.DoubleSide
     });
     this.bunkerDome = new THREE.Mesh(domeGeo, domeMat);
     this.scene.add(this.bunkerDome);
 
-    // Bunker Gates/Doors
-    const doorGeo = new THREE.BoxGeometry(8, 6, 0.5);
-    const doorMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8 });
+    // ── Bunker steel doors ──────────────────────────────────────
+    const doorGeo = new THREE.BoxGeometry(8, 6, 0.6);
+    const doorMat = new THREE.MeshStandardMaterial({
+      color: 0x3a2800,
+      roughness: 0.6,
+      metalness: 0.9
+    });
     
     const doorLeft = new THREE.Mesh(doorGeo, doorMat);
     doorLeft.position.set(-4, 3, -15);
@@ -161,46 +204,139 @@ export class GameScene {
     this.scene.add(doorRight);
     this.bunkerDoors.push(doorRight);
 
-    // Add scattered debris for post‑apocalyptic feel
-    const debrisCount = 30;
-    for (let i = 0; i < debrisCount; i++) {
-      const size = Math.random() * 2 + 0.5;
-      const boxGeo = new THREE.BoxGeometry(size, size, size);
-      const boxMat = new THREE.MeshStandardMaterial({
-        color: 0x444444,
-        roughness: 0.9,
-        metalness: 0.6,
-        transparent: true,
-        opacity: 0.8
-      });
-      const debris = new THREE.Mesh(boxGeo, boxMat);
-      const posX = (Math.random() - 0.5) * 100;
-      const posZ = (Math.random() - 0.5) * 100;
-      debris.position.set(posX, size / 2, posZ);
-      debris.castShadow = true;
-      debris.receiveShadow = true;
-      this.scene.add(debris);
-      this.obstacles.push(debris);
-    }
-    
-    this.mapObstacles.forEach(obs => {
+    // Bunker wall — dark corroded concrete
+    const wallArcPositions = [
+      { x: -15, z: 0,   ry: Math.PI / 2 },
+      { x:  15, z: 0,   ry: Math.PI / 2 },
+      { x:  0,  z: 15,  ry: 0 },
+    ];
+    wallArcPositions.forEach(w => {
+      const wGeo = new THREE.BoxGeometry(14, 4, 0.6);
+      const wMat = new THREE.MeshStandardMaterial({ color: 0x1e1008, roughness: 0.95, metalness: 0.2 });
+      const wMesh = new THREE.Mesh(wGeo, wMat);
+      wMesh.position.set(w.x, 2, w.z);
+      wMesh.rotation.y = w.ry;
+      wMesh.castShadow = true;
+      wMesh.receiveShadow = true;
+      this.scene.add(wMesh);
+    });
+
+    // ── Ruined buildings (the map obstacles) ───────────────────
+    const ruinColors = [0x2e1a08, 0x261408, 0x331c0a, 0x1e1206];
+    this.mapObstacles.forEach((obs, i) => {
       const width = obs.maxX - obs.minX;
       const depth = obs.maxZ - obs.minZ;
-      const height = 15;
+      const height = 10 + Math.random() * 8;
 
+      // Main block
       const boxGeo = new THREE.BoxGeometry(width, height, depth);
-      const boxMat = new THREE.MeshStandardMaterial({ 
-        color: 0x111111, 
-        roughness: 0.8,
-        bumpScale: 0.1
+      const boxMat = new THREE.MeshStandardMaterial({
+        color: ruinColors[i % ruinColors.length],
+        roughness: 0.95,
+        metalness: 0.1
       });
       const mesh = new THREE.Mesh(boxGeo, boxMat);
-      // Center position
       mesh.position.set(obs.minX + width / 2, height / 2, obs.minZ + depth / 2);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       this.scene.add(mesh);
       this.obstacles.push(mesh);
+
+      // Rooftop rubble / broken bits
+      for (let r = 0; r < 3; r++) {
+        const rSize = Math.random() * 2 + 0.5;
+        const rGeo = new THREE.BoxGeometry(rSize, rSize * 0.5, rSize);
+        const rMat = new THREE.MeshStandardMaterial({ color: 0x1a0d05, roughness: 1.0 });
+        const rMesh = new THREE.Mesh(rGeo, rMat);
+        rMesh.position.set(
+          obs.minX + width / 2 + (Math.random() - 0.5) * width * 0.7,
+          height + rSize * 0.25,
+          obs.minZ + depth / 2 + (Math.random() - 0.5) * depth * 0.7
+        );
+        rMesh.rotation.y = Math.random() * Math.PI;
+        rMesh.castShadow = true;
+        this.scene.add(rMesh);
+      }
+    });
+
+    // ── Scattered debris & abandoned vehicles ──────────────────
+    const debrisColors = [0x2a1508, 0x3a2010, 0x1a0d04, 0x4a2c10];
+    for (let i = 0; i < 50; i++) {
+      const size = Math.random() * 2 + 0.3;
+      const type = Math.random();
+      let debrisGeo: THREE.BufferGeometry;
+      if (type < 0.5) {
+        debrisGeo = new THREE.BoxGeometry(size, size * 0.4, size);
+      } else if (type < 0.8) {
+        debrisGeo = new THREE.CylinderGeometry(size * 0.3, size * 0.3, size * 0.8, 6);
+      } else {
+        debrisGeo = new THREE.TetrahedronGeometry(size * 0.6);
+      }
+      const debrisMat = new THREE.MeshStandardMaterial({
+        color: debrisColors[Math.floor(Math.random() * debrisColors.length)],
+        roughness: 1.0,
+        metalness: 0.3
+      });
+      const debris = new THREE.Mesh(debrisGeo, debrisMat);
+      // Keep away from center bunker zone
+      let px: number, pz: number;
+      do {
+        px = (Math.random() - 0.5) * 100;
+        pz = (Math.random() - 0.5) * 100;
+      } while (Math.sqrt(px * px + pz * pz) < 18);
+
+      debris.position.set(px, size * 0.2, pz);
+      debris.rotation.y = Math.random() * Math.PI * 2;
+      debris.rotation.z = (Math.random() - 0.5) * 0.4;
+      debris.castShadow = true;
+      debris.receiveShadow = true;
+      this.scene.add(debris);
+    }
+
+    // ── Fire barrels (glowing orange cylinders) ────────────────
+    const barrelPositions = [[-20, -20], [20, 20], [-25, 30], [30, -15], [0, 42], [15, -35]];
+    barrelPositions.forEach(([bx, bz]) => {
+      const bGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.2, 8);
+      const bMat = new THREE.MeshStandardMaterial({
+        color: 0x3a1a00,
+        roughness: 0.8,
+        metalness: 0.7,
+        emissive: new THREE.Color(0xff4400),
+        emissiveIntensity: 0.6
+      });
+      const barrel = new THREE.Mesh(bGeo, bMat);
+      barrel.position.set(bx, 0.6, bz);
+      barrel.castShadow = true;
+      this.scene.add(barrel);
+
+      // Flame glow sphere
+      const flameGeo = new THREE.SphereGeometry(0.35, 8, 8);
+      const flameMat = new THREE.MeshBasicMaterial({
+        color: 0xff7700,
+        transparent: true,
+        opacity: 0.85
+      });
+      const flame = new THREE.Mesh(flameGeo, flameMat);
+      flame.position.set(bx, 1.5, bz);
+      this.scene.add(flame);
+    });
+
+    // ── Distant ruined walls / broken skyline ──────────────────
+    const skylinePositions = [
+      { x: -55, z: -55 }, { x: 55, z: -55 }, { x: -55, z: 55 }, { x: 55, z: 55 },
+      { x: 0, z: -58 }, { x: -58, z: 0 }, { x: 58, z: 0 }, { x: 0, z: 58 }
+    ];
+    skylinePositions.forEach(sp => {
+      const h = 8 + Math.random() * 20;
+      const w = 6 + Math.random() * 12;
+      const sGeo = new THREE.BoxGeometry(w, h, 3);
+      const sMat = new THREE.MeshStandardMaterial({ color: 0x110800, roughness: 1.0, metalness: 0.0 });
+      const sMesh = new THREE.Mesh(sGeo, sMat);
+      sMesh.position.set(sp.x, h / 2, sp.z);
+      sMesh.rotation.y = Math.random() * 0.3 - 0.15;
+      sMesh.castShadow = true;
+      sMesh.receiveShadow = true;
+      this.scene.add(sMesh);
     });
   }
 
@@ -259,33 +395,41 @@ export class GameScene {
 
   // Authoritative State Sync & Reconciliation
   public updateState(state: GameState) {
-    // Update Fog based on Phase
+    // Update sky / fog based on game phase
     if (state.phase === 'EXTRACTION') {
-      this.scene.background = new THREE.Color(0x050805);
+      // Dusty orange daylight — extraction phase
+      this.scene.background = new THREE.Color(0x1a0d04);
       if (this.scene.fog instanceof THREE.FogExp2) {
-        this.scene.fog.color.setHex(0x050805);
+        this.scene.fog.color.setHex(0x1a0d04);
         this.scene.fog.density = 0.012;
       }
+      this.dirLight.color.setHex(0xff6020);
+      this.ambientLight.color.setHex(0x4a2a10);
       // Open doors
       this.animateDoors(true);
     } else if (state.phase === 'STORM') {
-      this.scene.background = new THREE.Color(0x020f02);
+      // Radioactive green storm fog — danger rising
+      const ratio = (30 - state.timer) / 30;
+      const skyHex = ratio > 0.5 ? 0x071204 : 0x0a1a06;
+      this.scene.background = new THREE.Color(skyHex);
       if (this.scene.fog instanceof THREE.FogExp2) {
-        this.scene.fog.color.setHex(0x020f02);
-        // Fog density grows over the 30s Storm phase
-        const ratio = (30 - state.timer) / 30;
-        this.scene.fog.density = 0.02 + ratio * 0.08;
+        this.scene.fog.color.setHex(skyHex);
+        this.scene.fog.density = 0.015 + ratio * 0.06;
       }
+      this.dirLight.color.setHex(0x80dd40);
+      this.ambientLight.color.setHex(0x1a3a0a);
       // Doors closing
       this.animateDoors(false, state.timer);
     } else {
-      // Vote / Lobby / Game Over
-      this.scene.background = new THREE.Color(0x050505);
+      // Vote / Lobby / Game Over — blood red tint
+      this.scene.background = new THREE.Color(0x110500);
       if (this.scene.fog instanceof THREE.FogExp2) {
-        this.scene.fog.color.setHex(0x050505);
-        this.scene.fog.density = 0.015;
+        this.scene.fog.color.setHex(0x110500);
+        this.scene.fog.density = 0.014;
       }
-      this.animateDoors(false, 0); // closed
+      this.dirLight.color.setHex(0xdd4410);
+      this.ambientLight.color.setHex(0x3a1a0a);
+      this.animateDoors(false, 0);
     }
 
     // Sync Players
@@ -317,70 +461,105 @@ export class GameScene {
 
       let group = this.playerMeshes[id];
       if (!group) {
-          // Create new player visual model (humanoid composed of simple shapes)
+          // Create humanoid player with post-apoc style clothing
           group = new THREE.Group();
 
-          // Torso (box)
-          const torsoGeo = new THREE.BoxGeometry(0.6, 0.9, 0.3);
-          const torsoMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.5 });
+          // Determine role-based palette
+          const isInfil = p.role === 'INFILTRATOR';
+          const bodyColor   = isInfil ? 0x1a0000 : 0x1e1408;   // dark red or dark khaki
+          const clothColor  = isInfil ? 0x660000 : 0x3a2a10;   // red coat or brown jacket
+          const pantsColor  = isInfil ? 0x2a0000 : 0x22180a;   // dark pants
+          const skinColor   = 0xc8956c;                          // weathered skin tone
+          const bootColor   = 0x1a1008;                          // dark boots
+          const visorHex    = isInfil ? 0xff2200 : 0x44cc88;   // red or green visor
+
+          // ── Torso / jacket ──────────────────────────────────
+          const torsoGeo = new THREE.BoxGeometry(0.65, 0.85, 0.35);
+          const torsoMat = new THREE.MeshStandardMaterial({
+            color: clothColor, roughness: 0.85, metalness: 0.05
+          });
           const torso = new THREE.Mesh(torsoGeo, torsoMat);
-          torso.position.y = 0.9; // half height
+          torso.position.y = 1.0;
           torso.castShadow = true;
           torso.receiveShadow = true;
           torso.name = 'body';
           group.add(torso);
 
-          // Head (sphere)
-          const headGeo = new THREE.SphereGeometry(0.3, 8, 8);
-          const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa, roughness: 0.6 });
+          // ── Head ────────────────────────────────────────────
+          const headGeo = new THREE.SphereGeometry(0.28, 10, 10);
+          const headMat = new THREE.MeshStandardMaterial({
+            color: skinColor, roughness: 0.7, metalness: 0.0
+          });
           const head = new THREE.Mesh(headGeo, headMat);
-          head.position.y = 1.55;
+          head.position.y = 1.62;
           head.castShadow = true;
-          head.receiveShadow = true;
           group.add(head);
 
-          // Left arm
-          const armGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 6);
-          const armMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.5 });
-          const leftArm = new THREE.Mesh(armGeo, armMat);
-          leftArm.position.set(-0.45, 1.2, 0);
-          leftArm.rotation.z = Math.PI / 2;
-          leftArm.castShadow = true;
-          leftArm.receiveShadow = true;
-          group.add(leftArm);
+          // Helmet / bandana
+          const hatGeo = new THREE.CylinderGeometry(0.3, 0.29, 0.18, 8);
+          const hatMat = new THREE.MeshStandardMaterial({
+            color: bodyColor, roughness: 0.9, metalness: 0.2
+          });
+          const hat = new THREE.Mesh(hatGeo, hatMat);
+          hat.position.y = 1.83;
+          hat.castShadow = true;
+          group.add(hat);
 
-          // Right arm
-          const rightArm = leftArm.clone();
-          rightArm.position.x = 0.45;
-          group.add(rightArm);
+          // ── Arms (with hands) ────────────────────────────────
+          const upperArmGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.45, 7);
+          const upperArmMat = new THREE.MeshStandardMaterial({ color: clothColor, roughness: 0.85 });
+          const lowerArmGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.35, 7);
+          const lowerArmMat = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.75 });
 
-          // Left leg
-          const legGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 6);
-          const legMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.5 });
-          const leftLeg = new THREE.Mesh(legGeo, legMat);
-          leftLeg.position.set(-0.2, 0.4, 0);
-          leftLeg.castShadow = true;
-          leftLeg.receiveShadow = true;
-          group.add(leftLeg);
+          [-1, 1].forEach(side => {
+            const uArm = new THREE.Mesh(upperArmGeo, upperArmMat.clone());
+            uArm.position.set(side * 0.48, 1.15, 0);
+            uArm.rotation.z = side * (Math.PI / 2 + 0.2);
+            uArm.castShadow = true;
+            group.add(uArm);
 
-          // Right leg
-          const rightLeg = leftLeg.clone();
-          rightLeg.position.x = 0.2;
-          group.add(rightLeg);
+            const lArm = new THREE.Mesh(lowerArmGeo, lowerArmMat.clone());
+            lArm.position.set(side * 0.7, 0.9, 0);
+            lArm.rotation.z = side * (Math.PI / 2 + 0.4);
+            lArm.castShadow = true;
+            group.add(lArm);
+          });
 
-          // Direction visor (still simple box for facing direction)
-          const visorGeo = new THREE.BoxGeometry(0.5, 0.15, 0.4);
-          const visorMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+          // ── Legs ─────────────────────────────────────────────
+          const upperLegGeo = new THREE.CylinderGeometry(0.13, 0.11, 0.5, 7);
+          const upperLegMat = new THREE.MeshStandardMaterial({ color: pantsColor, roughness: 0.9 });
+          const lowerLegGeo = new THREE.CylinderGeometry(0.1, 0.08, 0.4, 7);
+          const bootMat = new THREE.MeshStandardMaterial({ color: bootColor, roughness: 0.8, metalness: 0.3 });
+
+          [-1, 1].forEach(side => {
+            const uLeg = new THREE.Mesh(upperLegGeo, upperLegMat.clone());
+            uLeg.position.set(side * 0.19, 0.55, 0);
+            uLeg.castShadow = true;
+            group.add(uLeg);
+
+            const lLeg = new THREE.Mesh(lowerLegGeo, bootMat.clone());
+            lLeg.position.set(side * 0.19, 0.13, 0);
+            lLeg.castShadow = true;
+            group.add(lLeg);
+          });
+
+          // ── Eye visor / mask ─────────────────────────────────
+          const visorGeo = new THREE.BoxGeometry(0.35, 0.12, 0.08);
+          const visorMat = new THREE.MeshStandardMaterial({
+            color: visorHex,
+            emissive: new THREE.Color(visorHex),
+            emissiveIntensity: 0.8,
+            roughness: 0.2,
+            metalness: 0.8
+          });
           const visor = new THREE.Mesh(visorGeo, visorMat);
-          visor.position.set(0, 1.2, -0.3);
+          visor.position.set(0, 1.61, -0.27);
           visor.name = 'visor';
           group.add(visor);
 
-          // Name tag Sprite
-          // Ensure name tag is always on top of other objects
-          const nameSprite = this.makeNameSprite(p.name);
-          nameSprite.position.set(0, 2.1, 0);
-          // Disable depth test so it renders over everything
+          // ── Name tag sprite ──────────────────────────────────
+          const nameSprite = this.makeNameSprite(p.name, isInfil);
+          nameSprite.position.set(0, 2.3, 0);
           (nameSprite.material as THREE.SpriteMaterial).depthTest = false;
           nameSprite.name = 'nametag';
           group.add(nameSprite);
@@ -395,8 +574,9 @@ export class GameScene {
 
       if (!p.alive) {
         group.position.set(p.x, 0.15, p.z);
-        group.rotation.x = Math.PI / 2;
+        group.rotation.order = 'YXZ';
         group.rotation.y = p.ry;
+        group.rotation.x = Math.PI / 2;
         bodyMat.color.setHex(0x1a0505);
       } else {
         // Smooth interpolation to avoid lag spikes
@@ -410,15 +590,25 @@ export class GameScene {
         group.rotation.y += diff * 0.2;
         group.rotation.x = 0;
 
-        // Custom styling for Infiltrators teammates (Red name tags/visors)
+        // Update body/visor color based on role
         if (p.role === 'INFILTRATOR') {
-          bodyMat.color.setHex(0xff3333);
+          bodyMat.color.setHex(0x660000);
           const visor = group.getObjectByName('visor') as THREE.Mesh;
-          if (visor) (visor.material as THREE.MeshBasicMaterial).color.setHex(0xff0000);
+          if (visor) {
+            const vm = visor.material as THREE.MeshStandardMaterial;
+            vm.color.setHex(0xff2200);
+            vm.emissive.setHex(0xff2200);
+            vm.emissiveIntensity = 1.0;
+          }
         } else {
-          bodyMat.color.setHex(0x555555);
+          bodyMat.color.setHex(0x3a2a10);
           const visor = group.getObjectByName('visor') as THREE.Mesh;
-          if (visor) (visor.material as THREE.MeshBasicMaterial).color.setHex(0xffffff);
+          if (visor) {
+            const vm = visor.material as THREE.MeshStandardMaterial;
+            vm.color.setHex(0x44cc88);
+            vm.emissive.setHex(0x44cc88);
+            vm.emissiveIntensity = 0.7;
+          }
         }
       }
     });
@@ -428,16 +618,17 @@ export class GameScene {
       let mesh = this.lootMeshes[l.id];
       
       if (!mesh) {
-        // Create Loot visual
-        const lootGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+        // Create Loot visual — glowing amber supply crate
+        const lootGeo = new THREE.BoxGeometry(0.65, 0.45, 0.65);
         const lootMat = new THREE.MeshStandardMaterial({
-          color: 0xeeeeee,
-          wireframe: true,
-          metalness: 0.9,
-          roughness: 0.1
+          color: 0xcc7700,
+          emissive: new THREE.Color(0xaa5500),
+          emissiveIntensity: 0.5,
+          metalness: 0.6,
+          roughness: 0.4
         });
         mesh = new THREE.Mesh(lootGeo, lootMat);
-        mesh.position.set(l.x, 0.3, l.z);
+        mesh.position.set(l.x, 0.25, l.z);
         mesh.castShadow = true;
         this.scene.add(mesh);
         this.lootMeshes[l.id] = mesh;
@@ -459,69 +650,84 @@ export class GameScene {
     this.checkPrompts(state);
   }
 
-  private makeNameSprite(name: string): THREE.Sprite {
+  private makeNameSprite(name: string, isInfiltrator = false): THREE.Sprite {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
-    canvas.height = 64;
+    canvas.height = 56;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      ctx.fillRect(0, 0, 256, 64);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(0, 0, 256, 64);
+      // Background — dark panel
+      ctx.fillStyle = isInfiltrator ? 'rgba(60,0,0,0.78)' : 'rgba(8,20,10,0.78)';
+      ctx.fillRect(0, 0, 256, 56);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 24px "JetBrains Mono", monospace';
+      // Border glow
+      ctx.strokeStyle = isInfiltrator ? 'rgba(255,40,0,0.85)' : 'rgba(60,200,80,0.85)';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(1, 1, 254, 54);
+
+      // Name text
+      ctx.fillStyle = isInfiltrator ? '#ff8866' : '#aaffbb';
+      ctx.font = 'bold 22px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(name.toUpperCase(), 128, 32);
+      ctx.fillText(name.toUpperCase(), 128, 29);
     }
 
     const texture = new THREE.CanvasTexture(canvas);
     const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
     const sprite = new THREE.Sprite(mat);
-    // Ensure name tag is always on top
     (sprite.material as THREE.SpriteMaterial).depthTest = false;
     sprite.renderOrder = 9999;
-    sprite.scale.set(1.5, 0.375, 1);
+    sprite.scale.set(1.6, 0.35, 1);
     return sprite;
   }
 
   private initOverlay() {
-    // Create a simple HTML overlay with game rules
     const overlay = document.createElement('div');
     overlay.id = 'game-rules-overlay';
-    overlay.style.position = 'absolute';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.background = 'rgba(0,0,0,0.8)';
-    overlay.style.color = '#fff';
-    overlay.style.display = 'flex';
-    overlay.style.flexDirection = 'column';
-    overlay.style.justifyContent = 'center';
-    overlay.style.alignItems = 'center';
-    overlay.style.fontFamily = 'sans-serif';
-    overlay.style.zIndex = '1000';
-    overlay.style.padding = '2rem';
+    Object.assign(overlay.style, {
+      position: 'fixed',
+      top: '0', left: '0',
+      width: '100%', height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: '9000',
+      padding: '2rem',
+      textAlign: 'center'
+    });
     overlay.innerHTML = `
-      <h1>Règles du jeu</h1>
-      <ul style="text-align:left; max-width:600px;">
-        <li>Déplacez votre personnage avec <b>W/A/S/D</b> (ou <b>Z/Q/S/D</b>). Maintenez <b>Shift</b> pour sprinter.</li>
-        <li>Appuyez sur <b>F</b> pour ramasser des ressources lorsqu’elles sont proches.</li>
-        <li>En tant qu’infiltré, utilisez <b>E</b> pour éliminer silencieusement un adversaire derrière vous.</li>
-        <li>Collectez les butins et évitez les zones dangereuses.</li>
+      <h1 style="font-family:'Oswald',sans-serif;font-size:2.4rem;letter-spacing:.3em;
+                 color:#f5c87a;text-shadow:0 0 30px rgba(230,107,16,.7);margin-bottom:24px;">⚠ PROTOCOL 10 ⚠</h1>
+      <p style="font-family:'JetBrains Mono',monospace;color:#7a5c3a;font-size:.75rem;
+                letter-spacing:.2em;margin-bottom:28px;text-transform:uppercase;">BRIEFING DE MISSION — ZONE CONTAMINATION ALPHA</p>
+      <ul style="list-style:none;max-width:640px;text-align:left;">
+        <li style="padding:10px 0;border-bottom:1px solid rgba(180,90,20,.2);
+                   font-family:'JetBrains Mono',monospace;color:#7a5c3a;font-size:.88rem;line-height:1.6">
+          🎮 <b style="color:#e06b10">DÉPLACEMENT</b> — W / A / S / D &nbsp;|&nbsp; Z / Q / S / D (FR) &nbsp;|&nbsp; <b style="color:#e06b10">SHIFT</b> pour sprinter
+        </li>
+        <li style="padding:10px 0;border-bottom:1px solid rgba(180,90,20,.2);
+                   font-family:'JetBrains Mono',monospace;color:#7a5c3a;font-size:.88rem;line-height:1.6">
+          📦 <b style="color:#e06b10">RESSOURCES</b> — Appuyez sur <b style="color:#e06b10">F</b> près d'une caisse pour ramasser le butin
+        </li>
+        <li style="padding:10px 0;border-bottom:1px solid rgba(180,90,20,.2);
+                   font-family:'JetBrains Mono',monospace;color:#7a5c3a;font-size:.88rem;line-height:1.6">
+          🔴 <b style="color:#cc2a2a">INFILTRÉ</b> — Utilisez <b style="color:#cc2a2a">E</b> dans le dos d'un innocent pour l'éliminer silencieusement
+        </li>
+        <li style="padding:10px 0;border-bottom:1px solid rgba(180,90,20,.2);
+                   font-family:'JetBrains Mono',monospace;color:#7a5c3a;font-size:.88rem;line-height:1.6">
+          🟢 <b style="color:#4ec832">INNOCENT</b> — Récoltez 5 ressources OU survivez 3 cycles pour gagner
+        </li>
+        <li style="padding:10px 0;
+                   font-family:'JetBrains Mono',monospace;color:#7a5c3a;font-size:.88rem;line-height:1.6">
+          🗳️ <b style="color:#e06b10">VOTE</b> — Entre les cycles, votez pour bannir un suspect dans la tempête
+        </li>
       </ul>
       <p>Appuyez sur une touche ou cliquez pour commencer.</p>
     `;
     document.body.appendChild(overlay);
-    const dismiss = () => {
-      overlay.remove();
-      window.removeEventListener('keydown', dismiss);
-      window.removeEventListener('click', dismiss);
-    };
+    const dismiss = () => overlay.remove();
     window.addEventListener('keydown', dismiss, { once: true });
     window.addEventListener('click', dismiss, { once: true });
   }
