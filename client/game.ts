@@ -68,6 +68,8 @@ export class GameScene {
     this.initThree();
     this.createWorld();
     this.setupEvents();
+    this.initOverlay();
+
     this.animate();
   }
 
@@ -159,7 +161,28 @@ export class GameScene {
     this.scene.add(doorRight);
     this.bunkerDoors.push(doorRight);
 
-    // Outer City Buildings
+    // Add scattered debris for post‑apocalyptic feel
+    const debrisCount = 30;
+    for (let i = 0; i < debrisCount; i++) {
+      const size = Math.random() * 2 + 0.5;
+      const boxGeo = new THREE.BoxGeometry(size, size, size);
+      const boxMat = new THREE.MeshStandardMaterial({
+        color: 0x444444,
+        roughness: 0.9,
+        metalness: 0.6,
+        transparent: true,
+        opacity: 0.8
+      });
+      const debris = new THREE.Mesh(boxGeo, boxMat);
+      const posX = (Math.random() - 0.5) * 100;
+      const posZ = (Math.random() - 0.5) * 100;
+      debris.position.set(posX, size / 2, posZ);
+      debris.castShadow = true;
+      debris.receiveShadow = true;
+      this.scene.add(debris);
+      this.obstacles.push(debris);
+    }
+    
     this.mapObstacles.forEach(obs => {
       const width = obs.maxX - obs.minX;
       const depth = obs.maxZ - obs.minZ;
@@ -354,8 +377,11 @@ export class GameScene {
           group.add(visor);
 
           // Name tag Sprite
+          // Ensure name tag is always on top of other objects
           const nameSprite = this.makeNameSprite(p.name);
           nameSprite.position.set(0, 2.1, 0);
+          // Disable depth test so it renders over everything
+          (nameSprite.material as THREE.SpriteMaterial).depthTest = false;
           nameSprite.name = 'nametag';
           group.add(nameSprite);
 
@@ -455,11 +481,52 @@ export class GameScene {
     const texture = new THREE.CanvasTexture(canvas);
     const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
     const sprite = new THREE.Sprite(mat);
+    // Ensure name tag is always on top
+    (sprite.material as THREE.SpriteMaterial).depthTest = false;
+    sprite.renderOrder = 9999;
     sprite.scale.set(1.5, 0.375, 1);
     return sprite;
   }
 
-  private animateDoors(isOpen: boolean, timerVal = 30) {
+  private initOverlay() {
+    // Create a simple HTML overlay with game rules
+    const overlay = document.createElement('div');
+    overlay.id = 'game-rules-overlay';
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.background = 'rgba(0,0,0,0.8)';
+    overlay.style.color = '#fff';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.fontFamily = 'sans-serif';
+    overlay.style.zIndex = '1000';
+    overlay.style.padding = '2rem';
+    overlay.innerHTML = `
+      <h1>Règles du jeu</h1>
+      <ul style="text-align:left; max-width:600px;">
+        <li>Déplacez votre personnage avec <b>W/A/S/D</b> (ou <b>Z/Q/S/D</b>). Maintenez <b>Shift</b> pour sprinter.</li>
+        <li>Appuyez sur <b>F</b> pour ramasser des ressources lorsqu’elles sont proches.</li>
+        <li>En tant qu’infiltré, utilisez <b>E</b> pour éliminer silencieusement un adversaire derrière vous.</li>
+        <li>Collectez les butins et évitez les zones dangereuses.</li>
+      </ul>
+      <p>Appuyez sur une touche ou cliquez pour commencer.</p>
+    `;
+    document.body.appendChild(overlay);
+    const dismiss = () => {
+      overlay.remove();
+      window.removeEventListener('keydown', dismiss);
+      window.removeEventListener('click', dismiss);
+    };
+    window.addEventListener('keydown', dismiss, { once: true });
+    window.addEventListener('click', dismiss, { once: true });
+  }
+
+  private animateDoors(isOpen: boolean, timerVal: number = 0) {
     // Sliding gates at z = -15.
     // Left door default x = -4, open x = -10
     // Right door default x = 4, open x = 10
