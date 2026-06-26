@@ -48,6 +48,7 @@ let localPlayerId: string | null = null;
 let gameScene: GameScene | null = null;
 let isReady = false;
 let currentPhase = 'LOBBY';
+let voteCardsBuilt = false;
 
 // Initialise Socket Connections
 socket.on('connect', () => {
@@ -173,8 +174,10 @@ function handlePhaseTransition(phase: string) {
   if (phase === 'VOTE') {
     voteScreen.classList.remove('hidden');
     skipVoteBtn.disabled = false;
+    voteCardsBuilt = false; // rebuild grid on next updateHUD
   } else {
     voteScreen.classList.add('hidden');
+    voteCardsBuilt = false;
   }
 
   if (phase === 'GAME_OVER') {
@@ -302,40 +305,56 @@ function updateHUD(state: GameState) {
   // 7. Voting Overlay updates
   if (state.phase === 'VOTE') {
     voteTimer.textContent = state.timer.toString();
-    voteGrid.innerHTML = '';
 
-    Object.values(state.players).forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'vote-card';
-      
-      if (!p.alive) {
-        card.classList.add('voted-out');
-      }
+    if (!voteCardsBuilt) {
+      voteGrid.innerHTML = '';
 
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'v-name';
-      nameSpan.textContent = p.name;
+      Object.values(state.players).forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'vote-card';
+        card.dataset.playerId = p.id;
+        
+        if (!p.alive) {
+          card.classList.add('voted-out');
+        }
 
-      const countSpan = document.createElement('span');
-      countSpan.className = 'v-count';
-      countSpan.textContent = `${p.votesReceived} VOTES`;
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'v-name';
+        nameSpan.textContent = p.name;
 
-      card.appendChild(nameSpan);
-      card.appendChild(countSpan);
+        const countSpan = document.createElement('span');
+        countSpan.className = 'v-count';
+        countSpan.textContent = `${p.votesReceived} VOTES`;
 
-      // Disable card actions if self or dead
-      if (p.alive && p.id !== localPlayerId) {
-        card.addEventListener('click', () => {
-          socket.emit('castVote', { targetPlayerId: p.id });
-          // Highlight selected card visually
-          const allCards = voteGrid.querySelectorAll('.vote-card');
-          allCards.forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-        });
-      }
+        card.appendChild(nameSpan);
+        card.appendChild(countSpan);
 
-      voteGrid.appendChild(card);
-    });
+        // Disable card actions if self or dead
+        if (p.alive && p.id !== localPlayerId) {
+          card.addEventListener('click', () => {
+            socket.emit('castVote', { targetPlayerId: p.id });
+            const allCards = voteGrid.querySelectorAll('.vote-card');
+            allCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+          });
+        }
+
+        voteGrid.appendChild(card);
+      });
+
+      voteCardsBuilt = true;
+    } else {
+      // Update vote counts without rebuilding the DOM
+      Object.values(state.players).forEach(p => {
+        const card = voteGrid.querySelector(`[data-player-id="${p.id}"]`);
+        if (card) {
+          const c = card as HTMLElement;
+          const countSpan = c.querySelector('.v-count');
+          if (countSpan) countSpan.textContent = `${p.votesReceived} VOTES`;
+          c.classList.toggle('voted-out', !p.alive);
+        }
+      });
+    }
   }
 
   // 8. Game Over Screen
