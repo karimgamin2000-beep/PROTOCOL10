@@ -294,38 +294,73 @@ export class GameScene {
 
       let group = this.playerMeshes[id];
       if (!group) {
-        // Create new player visual model
-        group = new THREE.Group();
+          // Create new player visual model (humanoid composed of simple shapes)
+          group = new THREE.Group();
 
-        // Body Capsule
-        const bodyGeo = new THREE.CapsuleGeometry(0.4, 1.2, 4, 8);
-        const bodyMat = new THREE.MeshStandardMaterial({ 
-          color: 0x555555,
-          roughness: 0.5
-        });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 0.8;
-        body.castShadow = true;
-        body.receiveShadow = true;
-        body.name = 'body';
-        group.add(body);
+          // Torso (box)
+          const torsoGeo = new THREE.BoxGeometry(0.6, 0.9, 0.3);
+          const torsoMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.5 });
+          const torso = new THREE.Mesh(torsoGeo, torsoMat);
+          torso.position.y = 0.9; // half height
+          torso.castShadow = true;
+          torso.receiveShadow = true;
+          torso.name = 'body';
+          group.add(torso);
 
-        // Direction visor to show facing direction
-        const visorGeo = new THREE.BoxGeometry(0.5, 0.15, 0.4);
-        const visorMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const visor = new THREE.Mesh(visorGeo, visorMat);
-        visor.position.set(0, 1.2, -0.3);
-        visor.name = 'visor';
-        group.add(visor);
+          // Head (sphere)
+          const headGeo = new THREE.SphereGeometry(0.3, 8, 8);
+          const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa, roughness: 0.6 });
+          const head = new THREE.Mesh(headGeo, headMat);
+          head.position.y = 1.55;
+          head.castShadow = true;
+          head.receiveShadow = true;
+          group.add(head);
 
-        // Name tag Sprite
-        const nameSprite = this.makeNameSprite(p.name);
-        nameSprite.position.set(0, 1.8, 0);
-        nameSprite.name = 'nametag';
-        group.add(nameSprite);
+          // Left arm
+          const armGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 6);
+          const armMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.5 });
+          const leftArm = new THREE.Mesh(armGeo, armMat);
+          leftArm.position.set(-0.45, 1.2, 0);
+          leftArm.rotation.z = Math.PI / 2;
+          leftArm.castShadow = true;
+          leftArm.receiveShadow = true;
+          group.add(leftArm);
 
-        this.scene.add(group);
-        this.playerMeshes[id] = group;
+          // Right arm
+          const rightArm = leftArm.clone();
+          rightArm.position.x = 0.45;
+          group.add(rightArm);
+
+          // Left leg
+          const legGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 6);
+          const legMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.5 });
+          const leftLeg = new THREE.Mesh(legGeo, legMat);
+          leftLeg.position.set(-0.2, 0.4, 0);
+          leftLeg.castShadow = true;
+          leftLeg.receiveShadow = true;
+          group.add(leftLeg);
+
+          // Right leg
+          const rightLeg = leftLeg.clone();
+          rightLeg.position.x = 0.2;
+          group.add(rightLeg);
+
+          // Direction visor (still simple box for facing direction)
+          const visorGeo = new THREE.BoxGeometry(0.5, 0.15, 0.4);
+          const visorMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+          const visor = new THREE.Mesh(visorGeo, visorMat);
+          visor.position.set(0, 1.2, -0.3);
+          visor.name = 'visor';
+          group.add(visor);
+
+          // Name tag Sprite
+          const nameSprite = this.makeNameSprite(p.name);
+          nameSprite.position.set(0, 2.1, 0);
+          nameSprite.name = 'nametag';
+          group.add(nameSprite);
+
+          this.scene.add(group);
+          this.playerMeshes[id] = group;
       }
 
       // If dead, lie flat on the ground
