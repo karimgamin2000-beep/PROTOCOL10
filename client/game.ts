@@ -710,7 +710,7 @@ export class GameScene {
       <ul style="list-style:none;max-width:640px;text-align:left;">
         <li style="padding:10px 0;border-bottom:1px solid rgba(180,90,20,.2);
                    font-family:'JetBrains Mono',monospace;color:#7a5c3a;font-size:.88rem;line-height:1.6">
-          🎮 <b style="color:#e06b10">DÉPLACEMENT</b> — W / A / S / D &nbsp;|&nbsp; Z / Q / S / D (FR) &nbsp;|&nbsp; <b style="color:#e06b10">SHIFT</b> pour sprinter
+          🎮 <b style="color:#e06b10">DÉPLACEMENT</b> — ↑ / ← / ↓ / → &nbsp;|&nbsp; <b style="color:#e06b10">SHIFT</b> pour sprinter
         </li>
         <li style="padding:10px 0;border-bottom:1px solid rgba(180,90,20,.2);
                    font-family:'JetBrains Mono',monospace;color:#7a5c3a;font-size:.88rem;line-height:1.6">
@@ -774,20 +774,20 @@ export class GameScene {
     const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mouseYaw);
     const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mouseYaw);
 
-    // Support ZQSD (French) and WASD (English)
-    if (this.keys['z'] || this.keys['w']) {
+    // Arrow keys only
+    if (this.keys['arrowup']) {
       moveX += forward.x;
       moveZ += forward.z;
     }
-    if (this.keys['s']) {
+    if (this.keys['arrowdown']) {
       moveX -= forward.x;
       moveZ -= forward.z;
     }
-    if (this.keys['q'] || this.keys['a']) {
+    if (this.keys['arrowleft']) {
       moveX -= right.x;
       moveZ -= right.z;
     }
-    if (this.keys['d']) {
+    if (this.keys['arrowright']) {
       moveX += right.x;
       moveZ += right.z;
     }
