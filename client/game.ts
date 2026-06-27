@@ -772,9 +772,17 @@ export class GameScene {
 
     // Movement vectors relative to camera Y orientation
     const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mouseYaw);
-    const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mouseYaw);
 
-    // Arrow keys only
+    // Arrow keys rotation
+    const rotSpeed = 2.5;
+    if (this.keys['arrowleft']) {
+      this.mouseYaw += rotSpeed * dt;
+    }
+    if (this.keys['arrowright']) {
+      this.mouseYaw -= rotSpeed * dt;
+    }
+
+    // Arrow keys movement
     if (this.keys['arrowup']) {
       moveX += forward.x;
       moveZ += forward.z;
@@ -782,14 +790,6 @@ export class GameScene {
     if (this.keys['arrowdown']) {
       moveX -= forward.x;
       moveZ -= forward.z;
-    }
-    if (this.keys['arrowleft']) {
-      moveX -= right.x;
-      moveZ -= right.z;
-    }
-    if (this.keys['arrowright']) {
-      moveX += right.x;
-      moveZ += right.z;
     }
 
     const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
