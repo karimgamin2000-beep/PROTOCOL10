@@ -10,6 +10,7 @@ export interface Player {
   z: number;
   ry: number;
   alive: boolean;
+  hp: number;
   lootCount: number;
   inBunker: boolean;
   votesReceived: number;

@@ -501,6 +501,7 @@ function broadcastState() {
         z: p.z,
         ry: p.ry,
         alive: p.alive,
+        hp: p.hp,
         lootCount: p.lootCount,
         inBunker: p.inBunker,
         votesReceived: p.votesReceived,

@@ -455,8 +455,7 @@ export class GameScene {
       
       // Update local values directly from authoritative data if needed
       if (id === this.localPlayerId) {
-        this.localHp = p.alive ? 100 : 0; // simple update
-        // We reconciliate position if too far from server coordinates
+        this.localHp = p.hp;
         const serverPos = new THREE.Vector3(p.x, p.y, p.z);
         const dist = this.localPos.distanceTo(serverPos);
         if (dist > 2.5 || !p.alive) {
