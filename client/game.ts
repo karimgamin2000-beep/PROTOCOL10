@@ -347,6 +347,11 @@ export class GameScene {
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
 
+      // Prevent browser scrolling on arrow keys
+      if (e.key.startsWith('Arrow')) {
+        e.preventDefault();
+      }
+
       this.keys[e.key.toLowerCase()] = true;
 
       // Handle Interact [F]
