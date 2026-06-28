@@ -780,19 +780,19 @@ export class GameScene {
     const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mouseYaw);
 
     // Arrow keys only
-    if (this.keys['arrowup']) {
+    if (this.keys['arrowdown']) {
       moveX += forward.x;
       moveZ += forward.z;
     }
-    if (this.keys['arrowdown']) {
+    if (this.keys['arrowup']) {
       moveX -= forward.x;
       moveZ -= forward.z;
     }
-    if (this.keys['arrowleft']) {
+    if (this.keys['arrowright']) {
       moveX -= right.x;
       moveZ -= right.z;
     }
-    if (this.keys['arrowright']) {
+    if (this.keys['arrowleft']) {
       moveX += right.x;
       moveZ += right.z;
     }
